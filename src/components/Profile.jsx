@@ -4,30 +4,31 @@ import {
   loadUserData,
   Person,
   putFile,
-  getFile
+  getFile,
+  lookupProfile
 } from 'blockstack';
 
 const avatarFallbackImage = 'https://s3.amazonaws.com/onename/avatar-placeholder.png';
 
 export default class Profile extends Component {
-  constructor(props) {
-  	super(props);
+  constructor (props) {
+    super(props);
 
-  	this.state = {
-  	  person: {
-  	  	name() {
+    this.state = {
+      person: {
+        name () {
           return 'Anonymous';
         },
-  	  	avatarUrl() {
-  	  	  return avatarFallbackImage;
-  	  	},
+        avatarUrl () {
+          return avatarFallbackImage;
+        }
       },
-      username: "",
-      newStatuses: "",
+      username: '',
+      newStatuses: '',
       statuses: [],
       statusIndex: 0,
       isLoading: false
-  	};
+    };
   }
 
   render() {
@@ -41,107 +42,107 @@ export default class Profile extends Component {
         <div className="row">
           <div className="col-md-offset-3 col-md-6">
             <div className="col-md-12">
-              <div className="avater-section">
-                <img 
+              <div className="avatar-section">
+                <img
                   src={ person.avatarUrl() ? person.avatarUrl() : avatarFallbackImage }
                   className="img-rounded avatar"
-                  id="avator-image"
+                  id="avatar-image"
                 />
                 <div className="username">
                   <h1>
-                    <span id="heading-name">{ person.name() ? person.name() : 'Nameless Person'}</span>
+                    <span id="heading-name">{ person.name() ? person.name()
+                      : 'Nameless Person' }</span>
                   </h1>
                   <span>{username}</span>
                   {this.isLocal() &&
-                  <span>
-                    &nbsp;|&nbsp;
-                    <a onClick={ handleSignOut.bind(this) }>(Logout)</a>
-                  </span>
+                    <span>
+                      &nbsp;|&nbsp;
+                      <a onClick={ handleSignOut.bind(this) }>(Logout)</a>
+                    </span>
                   }
                 </div>
               </div>
             </div>
-
             {this.isLocal() &&
-            <div className="new-status">
-              <div className="col-md-12">
-                <textarea className="input-status"
-                  value={this.state.newStatus}
-                  onChange={e => this.handleNewStatusChange(e)}
-                  placeholder="What's on your mind?"
-                />
+              <div className="new-status">
+                <div className="col-md-12">
+                  <textarea className="input-status"
+                    value={this.state.newStatus}
+                    onChange={e => this.handleNewStatusChange(e)}
+                    placeholder="What's on your mind?"
+                  />
+                </div>
+                <div className="col-md-12 text-right">
+                  <button
+                    className="btn btn-primary btn-lg"
+                    onClick={e => this.handleNewStatusSubmit(e)}
+                  >
+                    Submit
+                  </button>
+                </div>
               </div>
-              <div className="col-md-12">
-                <button
-                  className="btn btn-primary btn-lg"
-                  onClick={e => this.handleNewStatusSubmit(e)}
-                >
-                  Submit
-                </button>
-              </div>
-            </div>
             }
-
             <div className="col-md-12 statuses">
-              {this.state.isLoading && <span>Loading...</span>}
-              {this.state.statuses.map((status) => (
+            {this.state.isLoading && <span>Loading...</span>}
+            {this.state.statuses.map((status) => (
                 <div className="status" key={status.id}>
                   {status.text}
                 </div>
-              ))}
+                )
+            )}
             </div>
-
           </div>
         </div>
       </div> : null
     );
   }
 
-  handleNewStatusChange(event) {
-    this.setState({newStatus: event.target.value})
+
+  handleNewStatusChange (event) {
+    this.setState({newStatus: event.target.value});
   }
 
-  handleNewStatusSubmit(event) {
-    this.saveNewStatus(this.state.newStatus)
-    this.setState({newStatus: ""})
+  handleNewStatusSubmit (event) {
+    this.saveNewStatus(this.state.newStatus);
+    this.setState({newStatus: ''});
   }
 
-  saveNewStatus(statusText) {
-    let statuses = this.state.statuses
+  saveNewStatus (statusText) {
+    let statuses = this.state.statuses;
 
     let status = {
       id: this.state.statusIndex++,
       text: statusText.trim(),
       created_at: Date.now()
-    }
+    };
 
-    statuses.unshift(status)
+    statuses.unshift(status);
 
     putFile('statuses.json', JSON.stringify(statuses))
       .then(() => {
         this.setState({
           statuses: statuses
-        })
-      })
+        });
+      });
   }
 
-  fetchData() {
-    this.setState({ isLoading: true})
+  fetchData () {
+    this.setState({ isLoading: true });
 
     if (this.isLocal()) {
       getFile('statuses.json')
       .then((file) => {
-        var statuses = JSON.parse(file || '[]')
+        var statuses = JSON.parse(file || '[]');
         this.setState({
           person: new Person(loadUserData().profile),
           username: loadUserData().username,
           statusIndex: statuses.length,
           statuses: statuses
-        })
+        });
       })
       .finally(() => {
-        this.setState({ isLoading: false})
-      })      
+        this.setState({ isLoading: false });
+      });
     } else {
       const username = this.props.match.params.username;
 
@@ -150,41 +151,40 @@ export default class Profile extends Component {
           this.setState({
             person: new Person(profile),
             username: username
-          })
+          });
         })
         .catch(() => {
-          console.log('could not resolve profile')
-        })
+          console.log('could not resolve profile');
+        });
 
-        const options = { username: username }
-        getFile('statuses.json', options)
+      const options = { username: username };
+      getFile('statuses.json', options)
           .then((file) => {
-            var statuses = JSON.parse(file || '[]')
+            var statuses = JSON.parse(file || '[]');
             this.setState({
               statusIndex: statuses.length,
               statuses: statuses
-            })
+            });
           })
           .catch((error) => {
-            console.log('could not fetch statuses')
+            console.log('could not fetch statuses');
+            console.log(error);
           })
           .finally(() => {
-            this.setState({ isLoading: false })
-          })
+            this.setState({ isLoading: false });
+          });
     }
-
-
   }
 
-  isLocal() {
-    return this.props.match.params.username ? false : true;
+  isLocal () {
+    return !this.props.match.params.username;
   }
 
-  componentDidMount() {
-    this.fetchData()
+  componentDidMount () {
+    this.fetchData();
   }
 
-  componentWillMount() {
+  componentWillMount () {
     this.setState({
       person: new Person(loadUserData().profile),
       username: loadUserData().username

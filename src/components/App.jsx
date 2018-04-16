@@ -1,4 +1,4 @@
-import React, { Component, Link } from 'react';
+import React, { Component } from 'react';
 import Profile from './Profile.jsx';
 import Signin from './Signin.jsx';
 import {
@@ -6,40 +6,34 @@ import {
   isUserSignedIn,
   redirectToSignIn,
   handlePendingSignIn,
-  signUserOut,
+  signUserOut
 } from 'blockstack';
 
 import { Switch, Route } from 'react-router-dom';
 
 export default class App extends Component {
-
-  constructor(props) {
-  	super(props);
-  }
-
-  handleSignIn(e) {
+  handleSignIn (e) {
     e.preventDefault();
     const origin = window.location.origin;
     redirectToSignIn(origin, origin + '/manifest.json', ['store_write', 'publish_data']);
   }
 
-  handleSignOut(e) {
+  handleSignOut (e) {
     e.preventDefault();
     signUserOut(window.location.origin);
   }
 
-  render() {
+  render () {
     return (
-      <div className="site-wrapper">
-        <div className="site-wrapper-inner">
-          { !isUserSignedIn() ?
-            <Signin handleSignIn={ this.handleSignIn } />
-            :
-            <Switch>
+      <div className='site-wrapper'>
+        <div className='site-wrapper-inner'>
+          {!isUserSignedIn()
+            ? <Signin handleSignIn={this.handleSignIn} />
+            : <Switch>
               <Route
-                path='/:username' 
+                path='/:username'
                 render={
-                  reouteProps => <Profile handleSignOut={ this.handleSignOut } {...reouteProps} />
+                  reouteProps => <Profile handleSignOut={this.handleSignOut} {...reouteProps} />
                 }
               />
             </Switch>
@@ -49,7 +43,7 @@ export default class App extends Component {
     );
   }
 
-  componentWillMount() {
+  componentWillMount () {
     if (isSignInPending()) {
       handlePendingSignIn().then((userData) => {
         window.location = window.location.origin;
