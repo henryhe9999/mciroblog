@@ -31,9 +31,9 @@ export default class App extends Component {
             ? <Signin handleSignIn={this.handleSignIn} />
             : <Switch>
               <Route
-                path='/:username'
+                path='/:username?'
                 render={
-                  reouteProps => <Profile handleSignOut={this.handleSignOut} {...reouteProps} />
+                  routeProps => <Profile handleSignOut={this.handleSignOut} {...routeProps} />
                 }
               />
             </Switch>
